@@ -42,6 +42,14 @@ namespace RobotArmControlGUI
             // Initialise button content/colour
             ConnectButton.Content = "Connect";
             ConnectButton.Background = Brushes.Green;
+            DisableAllSliders();
+
+            ToggleAntAckInfoButton.Content = "Show ANT__ACK info";
+
+            PacketsLabel.Visibility = Visibility.Collapsed;
+            AntAckFailCountLabel.Visibility = Visibility.Collapsed;
+            ResetAntAckButton.Visibility = Visibility.Collapsed;
+
         }
 
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
@@ -72,13 +80,23 @@ namespace RobotArmControlGUI
                 mySerialPort.ReadTimeout  = 500;
                 mySerialPort.WriteTimeout = 500;
 
-                // Open the port (maybe handle exceptions?)
-                mySerialPort.Open();
+                try
+                {
+                    mySerialPort.Open();
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    DebugTextblock.Text = ex.Message;
+                    mySerialPort.Close();
+                    return;
+                }
 
                 // Set 
+                EnableAllSliders();
                 DebugTextblock.Text = "";
                 ConnectButton.Content = "Disconnect"; // set button state to indicate we are connected
                 ConnectButton.Background = Brushes.Red;
+                mySerialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(SerialRecieveHandler);
 
             }
             else
@@ -86,6 +104,8 @@ namespace RobotArmControlGUI
                 if (mySerialPort.IsOpen == true)
                 {
                     mySerialPort.Close();
+
+                    DisableAllSliders();
                     DebugTextblock.Text = "";
                     ConnectButton.Content = "Connect"; // set button state to indicate we are disconnected
                     ConnectButton.Background = Brushes.Green;
@@ -146,6 +166,69 @@ namespace RobotArmControlGUI
         private void ClawGrabSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             SendFormattedCommand(ServoIDs.CLAW_GRAB, e.NewValue);
+        }
+
+        private void EnableAllSliders()
+        {
+            BaseSlider.IsEnabled        = true;
+            LowerHeightSlider.IsEnabled = true;
+            MidHeightSlider.IsEnabled   = true;
+            TopHeightSlider.IsEnabled   = true;
+            ClawGrabSlider.IsEnabled    = true;
+            ClawTiltSlider.IsEnabled    = true;
+        }
+        private void DisableAllSliders()
+        {
+            BaseSlider.IsEnabled        = false;
+            LowerHeightSlider.IsEnabled = false;
+            MidHeightSlider.IsEnabled   = false;
+            TopHeightSlider.IsEnabled   = false;
+            ClawGrabSlider.IsEnabled    = false;
+            ClawTiltSlider.IsEnabled    = false;
+        }
+
+        private void SerialRecieveHandler(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
+        {
+            string recieved_data = mySerialPort.ReadExisting();
+
+            if (recieved_data == "TX_FAIL\r\n")
+            {
+                int count;
+
+                // Because we are updating UI elements from outside of the main thread
+                // https://stackoverflow.com/questions/9732709/the-calling-thread-cannot-access-this-object-because-a-different-thread-owns-it
+                this.Dispatcher.Invoke(() =>
+                {
+                    //DebugTextblock.Text = recieved_data;
+                    count = int.Parse(AntAckFailCountLabel.Content.ToString());
+                    AntAckFailCountLabel.Content = (count+1).ToString();
+
+                });
+            }
+        }
+
+        private void ToggleAntAckInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((string)ToggleAntAckInfoButton.Content == "Show ANT__ACK info")
+            {
+                ToggleAntAckInfoButton.Content = "Hide ANT__ACK info";
+                PacketsLabel.Visibility = Visibility.Visible;
+                AntAckFailCountLabel.Visibility = Visibility.Visible;
+                ResetAntAckButton.Visibility = Visibility.Visible;
+
+            }
+            else
+            {
+                ToggleAntAckInfoButton.Content = "Show ANT__ACK info";
+                PacketsLabel.Visibility = Visibility.Collapsed;
+                AntAckFailCountLabel.Visibility = Visibility.Collapsed;
+                ResetAntAckButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ResetAntAckButton_Click(object sender, RoutedEventArgs e)
+        {
+            AntAckFailCountLabel.Content = "0";
         }
     }
 }

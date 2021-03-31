@@ -22,7 +22,10 @@
         <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Left" Height="30" Margin="245,585,0,0" VerticalAlignment="Top" Width="105" Click="ConnectButton_Click"/>
         <TextBox x:Name="ComTextbox" HorizontalAlignment="Left" VerticalContentAlignment="Center" Height="30" Margin="113,585,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="127" Background="#FF323232" Foreground="#FFBEBEBE"/>
         <Label Content="COM PORT: " HorizontalAlignment="Left" Height="30" Margin="34,585,0,0" VerticalContentAlignment="Center" Width="74" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
-        <TextBlock x:Name="DebugTextblock" HorizontalAlignment="Left" Height="100" Margin="34,672,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="316" Foreground="#FFBEBEBE" Background="#FF343434"/>
-        <Label Content="Debug" HorizontalAlignment="Left" Height="30" Margin="34,642,0,0" VerticalContentAlignment="Center" Width="74" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
+        <TextBlock x:Name="DebugTextblock" HorizontalAlignment="Left" Height="81" Margin="34,637,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="316" Foreground="#FFBEBEBE" Background="#FF343434"/>
+        <Button x:Name="ToggleAntAckInfoButton" Content="Show ANT__ACK info" HorizontalAlignment="Left" Height="30" Margin="235,743,0,0" VerticalAlignment="Top" Width="115" Click="ToggleAntAckInfoButton_Click"/>
+        <Button x:Name="ResetAntAckButton" Content="Reset" HorizontalAlignment="Left" Height="30" Margin="179,743,0,0" VerticalAlignment="Top" Width="40" Click="ResetAntAckButton_Click"/>
+        <Label x:Name="PacketsLabel" Content="Lost packets:" HorizontalAlignment="Left" Height="30" Margin="34,743,0,0" VerticalContentAlignment="Center" Width="79" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
+        <Label x:Name="AntAckFailCountLabel" Content="0" HorizontalAlignment="Left" Height="30" Margin="113,743,0,0" VerticalContentAlignment="Center" Width="53" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
     </Grid>
 </Window>
