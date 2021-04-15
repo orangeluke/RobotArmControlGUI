@@ -30,7 +30,7 @@
         <Button x:Name="BeginTestButton" Content="Start test" HorizontalAlignment="Left" Height="30" Margin="245,820,0,0" VerticalAlignment="Top" Width="105" Click="TestButton_Click"/>
         <TextBox x:Name="TimeTextbox" HorizontalAlignment="Left" VerticalContentAlignment="Center" Height="30" Margin="167,785,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="68" Background="#FF323232" Foreground="#FFBEBEBE"/>
         <TextBox x:Name="PacketsPerSecondTextbox" HorizontalAlignment="Left" VerticalContentAlignment="Center" Height="30" Margin="167,820,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="68" Background="#FF323232" Foreground="#FFBEBEBE"/>
-        <Label x:Name="PacketsLabel_Copy" Content="Time (seconds):" HorizontalAlignment="Left" Height="30" Margin="34,785,0,0" VerticalContentAlignment="Center" Width="106" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
-        <Label x:Name="PacketsLabel_Copy1" Content="Packets per second:" HorizontalAlignment="Left" Height="30" Margin="34,820,0,0" VerticalContentAlignment="Center" Width="119" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
+        <Label x:Name="TimeLabel" Content="Time (seconds):" HorizontalAlignment="Left" Height="30" Margin="34,785,0,0" VerticalContentAlignment="Center" Width="106" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
+        <Label x:Name="PPSLabel" Content="Packets per second:" HorizontalAlignment="Left" Height="30" Margin="34,820,0,0" VerticalContentAlignment="Center" Width="119" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
     </Grid>
 </Window>

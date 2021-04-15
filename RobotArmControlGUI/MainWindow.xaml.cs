@@ -52,6 +52,11 @@ namespace RobotArmControlGUI
             AntAckFailCountLabel.Visibility = Visibility.Collapsed;
             ResetAntAckButton.Visibility = Visibility.Collapsed;
             BeginTestButton.Visibility = Visibility.Collapsed;
+            TimeTextbox.Visibility = Visibility.Collapsed;
+            PacketsPerSecondTextbox.Visibility = Visibility.Collapsed;
+            TimeLabel.Visibility = Visibility.Collapsed;
+            PPSLabel.Visibility = Visibility.Collapsed;
+
             Application.Current.MainWindow.Height = 820;
 
         }
@@ -236,6 +241,10 @@ namespace RobotArmControlGUI
                 AntAckFailCountLabel.Visibility = Visibility.Visible;
                 ResetAntAckButton.Visibility = Visibility.Visible;
                 BeginTestButton.Visibility = Visibility.Visible;
+                TimeTextbox.Visibility = Visibility.Visible;
+                PacketsPerSecondTextbox.Visibility = Visibility.Visible;
+                TimeLabel.Visibility = Visibility.Visible;
+                PPSLabel.Visibility = Visibility.Visible;
                 Application.Current.MainWindow.Height = 916;
 
             }
@@ -246,6 +255,10 @@ namespace RobotArmControlGUI
                 AntAckFailCountLabel.Visibility = Visibility.Collapsed;
                 ResetAntAckButton.Visibility = Visibility.Collapsed;
                 BeginTestButton.Visibility = Visibility.Collapsed;
+                TimeTextbox.Visibility = Visibility.Collapsed;
+                PacketsPerSecondTextbox.Visibility = Visibility.Collapsed;
+                TimeLabel.Visibility = Visibility.Collapsed;
+                PPSLabel.Visibility = Visibility.Collapsed;
                 Application.Current.MainWindow.Height = 820;
             }
         }
