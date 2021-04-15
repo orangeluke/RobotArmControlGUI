@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Threading;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,9 @@ namespace RobotArmControlGUI
 
         static SerialPort mySerialPort = new SerialPort();
 
+        private delegate void NoArgDelegate();
+        private delegate void OneArgDelegate(string arg);
+
         private enum ServoIDs
         {
             BASE_DIR     = 0,
@@ -39,16 +43,16 @@ namespace RobotArmControlGUI
         {
             InitializeComponent();
 
-            // Initialise button content/colour
-            ConnectButton.Content = "Connect";
-            ConnectButton.Background = Brushes.Green;
-            DisableAllSliders();
+            ConnectButton_SetDisconnected(); // set button to indicate ready to connect
 
-            ToggleAntAckInfoButton.Content = "Show ANT__ACK info";
+            ToggleTestsButton.Content = "Show tests";
+            BeginTestButton.Content = "Start test";
 
             PacketsLabel.Visibility = Visibility.Collapsed;
             AntAckFailCountLabel.Visibility = Visibility.Collapsed;
             ResetAntAckButton.Visibility = Visibility.Collapsed;
+            BeginTestButton.Visibility = Visibility.Collapsed;
+            Application.Current.MainWindow.Height = 820;
 
         }
 
@@ -76,7 +80,7 @@ namespace RobotArmControlGUI
                 mySerialPort.Parity       = Parity.None;
                 mySerialPort.Handshake    = Handshake.None; // flow control
                 mySerialPort.DtrEnable    = true;           // needs to be enabled as no handshake
-                mySerialPort.RtsEnable    = true;           // ^
+                mySerialPort.RtsEnable    = true;           // "
                 mySerialPort.ReadTimeout  = 500;
                 mySerialPort.WriteTimeout = 500;
 
@@ -91,11 +95,10 @@ namespace RobotArmControlGUI
                     return;
                 }
 
-                // Set 
-                EnableAllSliders();
-                DebugTextblock.Text = "";
-                ConnectButton.Content = "Disconnect"; // set button state to indicate we are connected
-                ConnectButton.Background = Brushes.Red;
+                // Set UI
+                ConnectButton_SetConnected(); // set button state to indicate we are connected
+
+                // Register event handler for SerialDataReceived events
                 mySerialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(SerialRecieveHandler);
 
             }
@@ -103,14 +106,31 @@ namespace RobotArmControlGUI
             {
                 if (mySerialPort.IsOpen == true)
                 {
-                    mySerialPort.Close();
-
-                    DisableAllSliders();
-                    DebugTextblock.Text = "";
-                    ConnectButton.Content = "Connect"; // set button state to indicate we are disconnected
-                    ConnectButton.Background = Brushes.Green;
+                    mySerialPort.Close(); // only close port if it is open as we get an exception
                 }
+
+                // Always set UI even if port was already closed
+                ConnectButton_SetDisconnected(); // set button to indicate ready to connect
             }
+        }
+
+
+        private void ConnectButton_SetDisconnected()
+        {
+            DisableAllSliders();
+            DebugTextblock.Text = "";
+            ConnectButton.Content = "Connect"; // set button state to indicate we are disconnected
+            ConnectButton.Background = Brushes.Green;
+
+        }
+
+        private void ConnectButton_SetConnected()
+        {
+            EnableAllSliders();
+            DebugTextblock.Text = "";
+            ConnectButton.Content = "Disconnect"; // set button state to indicate we are connected
+            ConnectButton.Background = Brushes.Red;
+
         }
 
         private void SendFormattedCommand(ServoIDs ServoId, double RawValue)
@@ -126,7 +146,6 @@ namespace RobotArmControlGUI
                     [7] = "\r"
                     [8] = "\n"
                 */
-
                 mySerialPort.Write(((int)ServoId).ToString() + "-" + RawValue.ToString().PadLeft(4, '0').ToString() + " \r\n");
             }
             else
@@ -197,9 +216,9 @@ namespace RobotArmControlGUI
 
                 // Because we are updating UI elements from outside of the main thread
                 // https://stackoverflow.com/questions/9732709/the-calling-thread-cannot-access-this-object-because-a-different-thread-owns-it
-                this.Dispatcher.Invoke(() =>
+                this.Dispatcher.Invoke(() => // lambda
                 {
-                    //DebugTextblock.Text = recieved_data;
+                    //DebugTextblock.Text = recieved_data; // for debug
                     count = int.Parse(AntAckFailCountLabel.Content.ToString());
                     AntAckFailCountLabel.Content = (count+1).ToString();
 
@@ -207,22 +226,27 @@ namespace RobotArmControlGUI
             }
         }
 
-        private void ToggleAntAckInfoButton_Click(object sender, RoutedEventArgs e)
+        private void ToggleTestsButton_Click(object sender, RoutedEventArgs e)
         {
-            if ((string)ToggleAntAckInfoButton.Content == "Show ANT__ACK info")
+            // Set UI dependent on state
+            if ((string)ToggleTestsButton.Content == "Show tests")
             {
-                ToggleAntAckInfoButton.Content = "Hide ANT__ACK info";
+                ToggleTestsButton.Content = "Hide tests";
                 PacketsLabel.Visibility = Visibility.Visible;
                 AntAckFailCountLabel.Visibility = Visibility.Visible;
                 ResetAntAckButton.Visibility = Visibility.Visible;
+                BeginTestButton.Visibility = Visibility.Visible;
+                Application.Current.MainWindow.Height = 916;
 
             }
             else
             {
-                ToggleAntAckInfoButton.Content = "Show ANT__ACK info";
+                ToggleTestsButton.Content = "Show tests";
                 PacketsLabel.Visibility = Visibility.Collapsed;
                 AntAckFailCountLabel.Visibility = Visibility.Collapsed;
                 ResetAntAckButton.Visibility = Visibility.Collapsed;
+                BeginTestButton.Visibility = Visibility.Collapsed;
+                Application.Current.MainWindow.Height = 820;
             }
         }
 
@@ -230,5 +254,80 @@ namespace RobotArmControlGUI
         {
             AntAckFailCountLabel.Content = "0";
         }
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((string)ConnectButton.Content == "Disconnect")
+            {
+                DebugTextblock.Text = "Testing.....";
+
+                // Start the test asynchronously
+                NoArgDelegate fetcher = new NoArgDelegate(this.PerformTest);
+                fetcher.BeginInvoke(null, null);
+            }
+            else
+            {
+                DebugTextblock.Text = "Disconnected, cannot start test";
+            }
+        }
+
+        private void PerformTest()
+        {
+            string msg;
+            int seconds = 0;
+            int packetspersecond = 0;
+
+            this.Dispatcher.Invoke(() =>
+            {
+                Int32.TryParse(TimeTextbox.Text, out seconds);
+                Int32.TryParse(PacketsPerSecondTextbox.Text, out packetspersecond);
+            });
+
+            if (seconds == 0 || packetspersecond == 0)
+            {
+                msg = "ERROR - test requires inputs";
+            }
+            else
+            {
+                int lower = 500;
+                int packetssent = 0;
+
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                while (stopwatch.Elapsed < TimeSpan.FromSeconds(seconds))
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        SendFormattedCommand(ServoIDs.BASE_DIR, lower++);
+                    });
+                    packetssent++;
+
+                    if (lower >= 2500) // reset lower if it reaches upper bounds so that pulsewidth will not exceed bounds
+                        lower = 1500;
+
+                    Thread.Sleep(1000 / packetspersecond);
+                }
+
+                stopwatch.Stop();
+                TimeSpan ts = stopwatch.Elapsed;
+
+                // Format elapsed time ready to display.
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+
+                msg = "TEST FINISHED!  \nTime elapsed: " + elapsedTime + " \nPackets sent: " + packetssent;
+
+            }
+         
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, 
+                                        new OneArgDelegate(UpdateUI),
+                                        msg);
+        }
+
+        private void UpdateUI(String msg)
+        {
+            DebugTextblock.Text = msg;
+        }
+
     }
 }
