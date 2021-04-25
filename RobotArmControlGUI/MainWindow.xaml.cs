@@ -29,6 +29,11 @@ namespace RobotArmControlGUI
         private delegate void NoArgDelegate();
         private delegate void OneArgDelegate(string arg);
 
+        int debouncems = 10; // global slider debounce value
+        bool runtest = false;
+
+        Stopwatch sliderdebouncestopwatch = new Stopwatch();
+
         private enum ServoIDs
         {
             BASE_DIR     = 0,
@@ -47,6 +52,7 @@ namespace RobotArmControlGUI
 
             ToggleTestsButton.Content = "Show tests";
             BeginTestButton.Content = "Start test";
+            BeginTestButton.Background = Brushes.Green;
 
             PacketsLabel.Visibility = Visibility.Collapsed;
             AntAckFailCountLabel.Visibility = Visibility.Collapsed;
@@ -151,7 +157,7 @@ namespace RobotArmControlGUI
                     [7] = "\r"
                     [8] = "\n"
                 */
-                mySerialPort.Write(((int)ServoId).ToString() + "-" + RawValue.ToString().PadLeft(4, '0').ToString() + " \r\n");
+                mySerialPort.Write(((int)ServoId).ToString() + "-" + RawValue.ToString().PadLeft(4, '0').ToString() + " \r\n"); //CHANGE THIS TO 8 BYTES ITS CURRENTLY 9
             }
             else
             {
@@ -164,31 +170,43 @@ namespace RobotArmControlGUI
 
         private void BaseSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.BASE_DIR, e.NewValue);
         }
 
         private void LowerHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.LOWER_HEIGHT, e.NewValue);
         }
 
         private void MidHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.MID_HEIGHT, e.NewValue);
         }
 
         private void TopHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.TOP_HEIGHT, e.NewValue);
         }
 
         private void ClawTiltSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.CLAW_TILT, e.NewValue);
         }
 
         private void ClawGrabSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (delay())
+                return;
             SendFormattedCommand(ServoIDs.CLAW_GRAB, e.NewValue);
         }
 
@@ -268,15 +286,30 @@ namespace RobotArmControlGUI
             AntAckFailCountLabel.Content = "0";
         }
 
-        private void TestButton_Click(object sender, RoutedEventArgs e)
+        private void BeginTestButton_Click(object sender, RoutedEventArgs e)
         {
             if ((string)ConnectButton.Content == "Disconnect")
             {
-                DebugTextblock.Text = "Testing.....";
+                if ((string)BeginTestButton.Content == "Start test")
+                {
+                    DebugTextblock.Text = "Testing.....";
+                    BeginTestButton.Content = "Stop test";
+                    BeginTestButton.Background = Brushes.Red;
+                    runtest = true;
+                    DisableAllSliders();
 
-                // Start the test asynchronously
-                NoArgDelegate fetcher = new NoArgDelegate(this.PerformTest);
-                fetcher.BeginInvoke(null, null);
+                    // Start the test asynchronously
+                    NoArgDelegate fetcher = new NoArgDelegate(this.PerformTest);
+                    fetcher.BeginInvoke(null, null);
+
+                }
+                else
+                {
+                    runtest = false;
+                }
+
+
+
             }
             else
             {
@@ -308,7 +341,7 @@ namespace RobotArmControlGUI
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                while (stopwatch.Elapsed < TimeSpan.FromSeconds(seconds))
+                while (stopwatch.Elapsed < TimeSpan.FromSeconds(seconds) && runtest == true)
                 {
                     this.Dispatcher.Invoke(() =>
                     {
@@ -328,7 +361,15 @@ namespace RobotArmControlGUI
                 // Format elapsed time ready to display.
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
 
-                msg = "TEST FINISHED!  \nTime elapsed: " + elapsedTime + " \nPackets sent: " + packetssent;
+                // check if test was stopped manually
+                if (runtest == true)
+                {
+                    msg = "TEST FINISHED!  \nTime elapsed: " + elapsedTime + " \nPackets sent: " + packetssent;
+                }
+                else
+                {
+                    msg = "TEST STOPPED BY USER  \nTime elapsed: " + elapsedTime + " \nPackets sent: " + packetssent;
+                }
 
             }
          
@@ -340,6 +381,23 @@ namespace RobotArmControlGUI
         private void UpdateUI(String msg)
         {
             DebugTextblock.Text = msg;
+            BeginTestButton.Content = "Start test";
+            BeginTestButton.Background = Brushes.Green;
+            EnableAllSliders();
+        }
+
+        private bool delay() // Intended to act as debounce for sliders calling being changed too frequently and overloading embedded system at other end of COM
+        {
+            if (sliderdebouncestopwatch.ElapsedMilliseconds < debouncems)
+            {
+                sliderdebouncestopwatch.Start();
+                return true; // indicate true to delay
+            }
+
+            sliderdebouncestopwatch.Restart();
+
+            // indicate false to allow not delay
+            return false;
         }
 
     }

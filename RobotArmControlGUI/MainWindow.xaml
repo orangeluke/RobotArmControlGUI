@@ -27,7 +27,7 @@
         <Button x:Name="ResetAntAckButton" Content="Reset" HorizontalAlignment="Left" Height="30" Margin="195,743,0,0" VerticalAlignment="Top" Width="40" Click="ResetAntAckButton_Click"/>
         <Label x:Name="PacketsLabel" Content="Lost ANT packets:" HorizontalAlignment="Left" Height="30" Margin="34,743,0,0" VerticalContentAlignment="Center" Width="106" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
         <Label x:Name="AntAckFailCountLabel" Content="0" HorizontalAlignment="Left" Height="30" Margin="145,743,0,0" VerticalContentAlignment="Center" Width="58" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
-        <Button x:Name="BeginTestButton" Content="Start test" HorizontalAlignment="Left" Height="30" Margin="245,820,0,0" VerticalAlignment="Top" Width="105" Click="TestButton_Click"/>
+        <Button x:Name="BeginTestButton" Content="Start test" HorizontalAlignment="Left" Height="30" Margin="245,820,0,0" VerticalAlignment="Top" Width="105" Click="BeginTestButton_Click"/>
         <TextBox x:Name="TimeTextbox" HorizontalAlignment="Left" VerticalContentAlignment="Center" Height="30" Margin="167,785,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="68" Background="#FF323232" Foreground="#FFBEBEBE"/>
         <TextBox x:Name="PacketsPerSecondTextbox" HorizontalAlignment="Left" VerticalContentAlignment="Center" Height="30" Margin="167,820,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="68" Background="#FF323232" Foreground="#FFBEBEBE"/>
         <Label x:Name="TimeLabel" Content="Time (seconds):" HorizontalAlignment="Left" Height="30" Margin="34,785,0,0" VerticalContentAlignment="Center" Width="106" Foreground="#FFBEBEBE" VerticalAlignment="Top"/>
