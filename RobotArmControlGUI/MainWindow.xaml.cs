@@ -29,7 +29,7 @@ namespace RobotArmControlGUI
         private delegate void NoArgDelegate();
         private delegate void OneArgDelegate(string arg);
 
-        int debouncems = 10; // global slider debounce value
+        int debouncems = 10; // global slider debounce value (milliseconds)
         bool runtest = false;
 
         Stopwatch sliderdebouncestopwatch = new Stopwatch();
@@ -132,6 +132,7 @@ namespace RobotArmControlGUI
             DebugTextblock.Text = "";
             ConnectButton.Content = "Connect"; // set button state to indicate we are disconnected
             ConnectButton.Background = Brushes.Green;
+            runtest = false;
 
         }
 
@@ -153,11 +154,10 @@ namespace RobotArmControlGUI
                     [0] = ServoID (0 - 5, see enum ServoIDs for mapping) 
                     [1] = "-"
                     [2..5] = Duty cycle (0500 - 2500, ALWAYS 4 characters, will be padded if not)
-                    [6] = " "
-                    [7] = "\r"
-                    [8] = "\n"
+                    [6] = "\r"
+                    [7] = "\n"
                 */
-                mySerialPort.Write(((int)ServoId).ToString() + "-" + RawValue.ToString().PadLeft(4, '0').ToString() + " \r\n"); //CHANGE THIS TO 8 BYTES ITS CURRENTLY 9
+                mySerialPort.Write(((int)ServoId).ToString() + "-" + RawValue.ToString().PadLeft(4, '0').ToString() + "\r\n");
             }
             else
             {
